@@ -765,24 +765,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. 日期框下方及整体视图左右滑动 (在“日历”“节气表”“吉日速查”之间无缝连贯轮播)
     const viewsCarousel = dom.viewsSwipeCarousel;
     if (viewsCarousel) {
-      let cachedWidth = viewsCarousel.offsetWidth || 360;
-      let lastTabIdx = 0;
-
-      window.addEventListener('resize', () => {
-        cachedWidth = viewsCarousel.offsetWidth || 360;
-      }, { passive: true });
-
-      function updatePillToTab(idx) {
-        if (dom.tabSliderPill) {
-          dom.tabSliderPill.style.transition = 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)';
-          dom.tabSliderPill.style.transform = `translate3d(${idx * 100}%, 0, 0)`;
-        }
-      }
-
       viewsCarousel.addEventListener('scroll', () => {
         if (isTabScrolling) return;
 
-        const w = cachedWidth || viewsCarousel.offsetWidth || 360;
+        const w = viewsCarousel.offsetWidth || 360;
         const sl = viewsCarousel.scrollLeft;
         const progress = sl / w;
         const idx = Math.max(0, Math.min(2, Math.round(progress)));
@@ -795,14 +781,15 @@ document.addEventListener('DOMContentLoaded', () => {
           dom.tabJieqi.classList.toggle('active', idx === 1);
           dom.tabAuspicious.classList.toggle('active', idx === 2);
 
-          // 核心优化：当跨过 50% 边界时，白色胶囊以 120 FPS 纯硬件 GPU 减速曲线丝滑滑向目标 Tab，彻底消除 WebKit scroll 事件批处理导致的微抖动！
           updatePillToTab(idx);
         }
       }, { passive: true });
 
       if ('onscrollend' in window) {
         viewsCarousel.addEventListener('scrollend', () => {
-          updatePillToTab(lastTabIdx);
+          if (!isTabScrolling) {
+            updatePillToTab(lastTabIdx);
+          }
         });
       }
     }
@@ -963,31 +950,42 @@ document.addEventListener('DOMContentLoaded', () => {
    * 视图 Tab 平滑滑动切换 (带 120Hz 纯硬件 GPU 连贯动画)
    */
   let isTabScrolling = false;
+  let tabScrollTimer = null;
+  let lastTabIdx = 0;
+
+  function updatePillToTab(idx) {
+    lastTabIdx = idx;
+    if (dom.tabSliderPill) {
+      dom.tabSliderPill.style.transition = 'transform 0.24s cubic-bezier(0.25, 1, 0.5, 1)';
+      dom.tabSliderPill.style.transform = `translate3d(${idx * 100}%, 0, 0)`;
+    }
+  }
 
   function switchTab(tab) {
     state.currentTab = tab;
-    
-    dom.tabCalendar.classList.toggle('active', tab === 'calendar');
-    dom.tabJieqi.classList.toggle('active', tab === 'jieqi');
-    dom.tabAuspicious.classList.toggle('active', tab === 'auspicious');
-
     const tabIndex = tab === 'calendar' ? 0 : tab === 'jieqi' ? 1 : 2;
     
-    // 1. 顶部白色药丸胶囊以 0.2s 极速苹果减速曲线顺滑就位 (120 FPS 满帧 GPU 驱动)
-    if (dom.tabSliderPill) {
-      dom.tabSliderPill.style.transition = 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)';
-      dom.tabSliderPill.style.transform = `translate3d(${tabIndex * 100}%, 0, 0)`;
-    }
+    dom.tabCalendar.classList.toggle('active', tabIndex === 0);
+    dom.tabJieqi.classList.toggle('active', tabIndex === 1);
+    dom.tabAuspicious.classList.toggle('active', tabIndex === 2);
 
-    // 2. 页面视口瞬间就位，0ms 消除 iOS WebKit 的横向滚动锁，用户无需等待即可立即上下滑动！
+    // 1. 顶部白色药丸胶囊立即 120 FPS 满帧滑向目标
+    updatePillToTab(tabIndex);
+
+    // 2. 页面视口滑动到目标位置
     const carousel = dom.viewsSwipeCarousel;
     if (carousel) {
       isTabScrolling = true;
+      if (tabScrollTimer) clearTimeout(tabScrollTimer);
+      
       const targetLeft = tabIndex * carousel.offsetWidth;
       carousel.scrollLeft = targetLeft;
-      requestAnimationFrame(() => {
+
+      // 锁定 350ms，防止 iOS Safari 平滑滚动过程中触发的中间帧 scroll 事件将白色胶囊误拉回原处！
+      tabScrollTimer = setTimeout(() => {
         isTabScrolling = false;
-      });
+        updatePillToTab(tabIndex);
+      }, 350);
     }
   }
 
