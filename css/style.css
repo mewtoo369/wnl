@@ -1,0 +1,1651 @@
+/* ==========================================================================
+   iPhone 极简无广告万年历 (WanNianLi) - iOS 质感设计系统
+   ========================================================================== */
+
+:root {
+  --bg-app: #f4f5f8;
+  --bg-card: rgba(255, 255, 255, 0.96);
+  --bg-card-solid: #ffffff;
+  --bg-card-subtle: #f8f9fc;
+  --bg-pill: #eef1f6;
+  --bg-pill-active: #ffffff;
+  
+  --text-main: #1c1c1e;
+  --text-secondary: #5c5c60;
+  --text-tertiary: #8e8e93;
+  --text-muted: #bcbcc0;
+
+  --accent-primary: #e53935;
+  --accent-tint: rgba(229, 57, 53, 0.12);
+  --accent-border: rgba(229, 57, 53, 0.35);
+
+  --color-holiday: #ff3b30;
+  --color-holiday-bg: rgba(255, 59, 48, 0.12);
+  --color-work: #8e8e93;
+  --color-work-bg: rgba(142, 142, 147, 0.14);
+
+  --color-yi: #34c759;
+  --color-yi-bg: rgba(52, 199, 89, 0.12);
+  --color-ji: #ff3b30;
+  --color-ji-bg: rgba(255, 59, 48, 0.12);
+
+  --color-jieqi: #ff9500;
+  --color-festival: #e53935;
+  --color-today-ring: #e53935;
+
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-highlight: rgba(0, 0, 0, 0.12);
+  
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 26px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 16px 36px rgba(0, 0, 0, 0.1);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* 深色模式 / 暗黑模式 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-app: #0a0a0c;
+    --bg-card: rgba(28, 28, 30, 0.85);
+    --bg-card-solid: #1c1c1e;
+    --bg-card-subtle: #252528;
+    --bg-pill: #2c2c2e;
+    --bg-pill-active: #3a3a3c;
+
+    --text-main: #f2f2f7;
+    --text-secondary: #aeaeb2;
+    --text-tertiary: #8e8e93;
+    --text-muted: #636366;
+
+    --accent-primary: #ff453a;
+    --accent-tint: rgba(255, 69, 58, 0.18);
+    --accent-border: rgba(255, 69, 58, 0.45);
+    --color-today-ring: #ff453a;
+
+    --border-subtle: rgba(255, 255, 255, 0.09);
+    --border-highlight: rgba(255, 255, 255, 0.16);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg-app: #0a0a0c;
+  --bg-card: rgba(28, 28, 30, 0.85);
+  --bg-card-solid: #1c1c1e;
+  --bg-card-subtle: #252528;
+  --bg-pill: #2c2c2e;
+  --bg-pill-active: #3a3a3c;
+
+  --text-main: #f2f2f7;
+  --text-secondary: #aeaeb2;
+  --text-tertiary: #8e8e93;
+  --text-muted: #636366;
+
+  --accent-primary: #ff453a;
+  --accent-tint: rgba(255, 69, 58, 0.18);
+  --accent-border: rgba(255, 69, 58, 0.45);
+  --color-today-ring: #ff453a;
+
+  --border-subtle: rgba(255, 255, 255, 0.09);
+  --border-highlight: rgba(255, 255, 255, 0.16);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* 基础重置与排版 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  background-color: var(--bg-app);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 容器架构（适配 iPhone 全屏及桌面居中预览） */
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding-top: max(var(--safe-top), 14px);
+  padding-bottom: max(var(--safe-bottom), 12px);
+  padding-left: 14px;
+  padding-right: 14px;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 毛玻璃质感基底 */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   顶部导航栏
+   ========================================================================== */
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px 10px 2px;
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: -6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.header-title-group:active {
+  background: var(--bg-pill-active);
+}
+
+.header-date-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.header-date-row-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.header-year {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
+  line-height: 1.2;
+}
+
+.header-lunar-year {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.header-date-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-month-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-month {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.chevron-down {
+  width: 15px;
+  height: 15px;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+
+.header-lunar-zodiac {
+  font-size: 11px;
+  color: var(--accent-primary);
+  background: var(--accent-tint);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  line-height: 1.2;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-icon:active {
+  transform: scale(0.92);
+  background: var(--bg-pill-active);
+}
+
+.btn-today {
+  padding: 0 11px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: #ffffff;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.28);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-today:active {
+  transform: scale(0.94);
+  opacity: 0.9;
+}
+
+/* ==========================================================================
+   快捷功能与视图切换药丸栏 (完美弧形 iOS 椭圆胶囊指示器)
+   ========================================================================== */
+.quick-tools-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-pill);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  margin-bottom: 10px;
+  overflow: hidden;
+  user-select: none;
+  contain: layout paint;
+}
+
+.tab-slider-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px) / 3);
+  background: var(--bg-card-solid);
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent !important;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: none !important;
+  opacity: 0.65;
+}
+
+.tab-btn.active {
+  color: var(--text-main);
+  opacity: 1;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   传统五行属性着色系统 (金·木·水·火·土)
+   ========================================================================== */
+.wuxing-metal {
+  color: #d97706; /* 金色 */
+  font-weight: 700;
+}
+.wuxing-wood {
+  color: #10b981; /* 绿色 */
+  font-weight: 700;
+}
+.wuxing-water {
+  color: #0284c7; /* 蓝色 */
+  font-weight: 700;
+}
+.wuxing-fire {
+  color: #ef4444; /* 红色 */
+  font-weight: 700;
+}
+.wuxing-earth {
+  color: #b45309; /* 棕色 */
+  font-weight: 700;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .wuxing-metal { color: #f59e0b; }
+  :root:not([data-theme="light"]) .wuxing-wood  { color: #34d399; }
+  :root:not([data-theme="light"]) .wuxing-water { color: #38bdf8; }
+  :root:not([data-theme="light"]) .wuxing-fire  { color: #f87171; }
+  :root:not([data-theme="light"]) .wuxing-earth { color: #d97706; }
+}
+
+:root[data-theme="dark"] .wuxing-metal { color: #f59e0b; }
+:root[data-theme="dark"] .wuxing-wood  { color: #34d399; }
+:root[data-theme="dark"] .wuxing-water { color: #38bdf8; }
+:root[data-theme="dark"] .wuxing-fire  { color: #f87171; }
+:root[data-theme="dark"] .wuxing-earth { color: #d97706; }
+
+/* 3 大主功能视图 120Hz 左右平滑轮播滑轨容器 (由 GPU 原生多线程直接驱动) */
+.views-swipe-carousel {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.views-swipe-carousel::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.view-slide-panel {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  padding-bottom: 12px;
+}
+
+/* ==========================================================================
+   主日历卡片 (日历网格)
+   ========================================================================== */
+.calendar-card {
+  padding: 10px 10px 12px 10px;
+  margin-bottom: 0;
+  background: var(--bg-card-solid);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 星期表头 */
+.week-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.week-header .weekend {
+  color: var(--color-holiday);
+  opacity: 0.85;
+}
+
+/* 经典相册级 120Hz GPU 硬件切月视口与独立层 */
+/* 日历硬件加速 120Hz CSS Scroll Snap 容器 (0 行 JS 阻塞，由 iOS C++ 硬件合成器线程直接驱动) */
+.calendar-scroll-container {
+  display: flex;
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overscroll-behavior-x: contain;
+}
+
+.calendar-scroll-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.month-grid-panel {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+}
+
+.month-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 2px;
+  column-gap: 2px;
+  box-sizing: border-box;
+}
+
+/* 单个日期单元格 - 精调为 38px 黄金高度，确保 6 行日期 100% 完整显示，公历农历一清二楚，底部绝无截断！ */
+.day-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-cell:active {
+  transform: scale(0.92);
+  background: var(--bg-pill-active);
+}
+
+/* 非当月日期 */
+.day-cell.other-month {
+  opacity: 0.32;
+}
+
+/* 公历大字 */
+.solar-num {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-main);
+  letter-spacing: -0.2px;
+}
+
+.day-cell.weekend .solar-num {
+  color: var(--color-holiday);
+}
+
+.day-cell.other-month .solar-num {
+  color: var(--text-muted);
+}
+
+/* 农历小字 / 节气 / 节日 */
+.lunar-text {
+  font-size: 9.5px;
+  line-height: 1.1;
+  color: var(--text-tertiary);
+  margin-top: 1px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.day-cell .lunar-text.festival {
+  color: var(--color-festival);
+  font-weight: 600;
+}
+
+.day-cell .lunar-text.solar-term {
+  color: var(--color-jieqi);
+  font-weight: 600;
+}
+
+.day-cell .lunar-text.lunar-first {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+/* 法定放假/调休角标 */
+.holiday-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 3px;
+  border-radius: 4px;
+  transform: scale(0.85);
+}
+
+.badge-xiu {
+  background: var(--color-holiday-bg);
+  color: var(--color-holiday);
+}
+
+.badge-ban {
+  background: var(--color-work-bg);
+  color: var(--text-secondary);
+}
+
+/* 今日环形高亮：贴合方块边缘并加粗 */
+.day-cell.is-today::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  border: 2.5px solid var(--color-today-ring);
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+/* 今日且被选中态：高亮白色边框与红色底色 */
+.day-cell.is-today.is-selected::before {
+  border: 2.5px solid rgba(255, 255, 255, 0.95);
+  inset: 0px;
+}
+
+/* 选中日期态 (喜庆红底与柔和红晕) */
+.day-cell.is-selected {
+  background: var(--accent-primary) !important;
+  box-shadow: 0 4px 14px rgba(229, 57, 53, 0.4);
+}
+
+.day-cell.is-selected .solar-num,
+.day-cell.is-selected .lunar-text,
+.day-cell.is-selected .solar-num {
+  color: #ffffff !important;
+}
+
+.day-cell.is-selected .holiday-badge {
+  opacity: 0.9;
+}
+
+/* 备忘小圆点 */
+.memo-dot {
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+}
+
+.day-cell.is-selected .memo-dot {
+  background: #ffffff;
+}
+
+/* ==========================================================================
+   当日黄历详情卡片 (Hero Card)
+   ========================================================================== */
+.detail-card {
+  padding: 16px 14px 16px 14px;
+  margin-bottom: 0;
+}
+
+.detail-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.detail-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-lunar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.detail-lunar-main {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.detail-solar-week {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.detail-lunar-ganzhi {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.detail-jieqi-tag {
+  background: rgba(255, 149, 0, 0.12);
+  color: var(--color-jieqi);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 日期卡片底部双胶囊操作栏 (展开黄历抽屉 + 回到今天) */
+.detail-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-toggle-huangli {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px;
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-app-region: no-drag !important;
+}
+
+.btn-toggle-huangli:hover {
+  background: var(--bg-pill-active);
+  color: var(--text-main);
+}
+
+.btn-toggle-huangli:active {
+  transform: scale(0.98);
+}
+
+.btn-today-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 36px;
+  padding: 0 13px;
+  background: rgba(229, 57, 53, 0.08);
+  border: 1px solid rgba(229, 57, 53, 0.22);
+  border-radius: var(--radius-md);
+  color: var(--accent-primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-app-region: no-drag !important;
+}
+
+.btn-today-card:hover {
+  background: rgba(229, 57, 53, 0.14);
+}
+
+.btn-today-card:active {
+  background: var(--accent-primary);
+  color: #ffffff;
+  transform: scale(0.96);
+}
+
+.btn-toggle-huangli .toggle-icon {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-toggle-huangli.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* 宜忌折叠展开容器 (GPU 独立硬件合成与精确高度平滑裁剪，120 FPS 绝不掉帧) */
+.huangli-collapsible-wrapper {
+  overflow: hidden;
+  max-height: 0px;
+  opacity: 0;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  transition: max-height 0.28s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.22s ease, margin-top 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: max-height, opacity;
+  contain: paint layout;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  touch-action: pan-y;
+  pointer-events: none;
+}
+
+.huangli-collapsible-wrapper.expanded {
+  opacity: 1;
+  margin-top: 14px;
+  pointer-events: auto;
+}
+
+.huangli-collapsible-inner {
+  min-height: 0;
+  overflow: hidden;
+  contain: paint layout;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* 抽屉下拉指示拉手条 (iOS Sheet 风格交互把手) */
+.drawer-pull-handle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0 10px;
+  cursor: grab;
+  user-select: none;
+}
+
+.drawer-pull-handle-bar:active {
+  cursor: grabbing;
+}
+
+.drawer-pull-handle {
+  width: 38px;
+  height: 4px;
+  background: var(--text-tertiary);
+  opacity: 0.38;
+  border-radius: var(--radius-full);
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.drawer-pull-handle-bar:hover .drawer-pull-handle {
+  opacity: 0.65;
+  width: 44px;
+}
+
+/* 宜忌区域 */
+.yiji-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.yiji-box {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.yiji-box.yi {
+  background: var(--color-yi-bg);
+}
+
+.yiji-box.ji {
+  background: var(--color-ji-bg);
+}
+
+.yiji-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.yiji-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.yiji-box.yi .yiji-badge {
+  background: var(--color-yi);
+}
+
+.yiji-box.ji .yiji-badge {
+  background: var(--color-ji);
+}
+
+.yiji-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.yiji-box.yi .yiji-title {
+  color: var(--color-yi);
+}
+
+.yiji-box.ji .yiji-title {
+  color: var(--color-ji);
+}
+
+.yiji-content-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.yiji-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.55);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* 黄历方位与神位网格 */
+.huangli-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  background: var(--bg-card-subtle);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-key {
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.meta-val {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+/* 时辰吉凶横向滚动条 */
+.times-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.times-scroll-box {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.times-scroll-box::-webkit-scrollbar {
+  display: none;
+}
+
+.time-chip {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  background: var(--bg-card-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  gap: 2px;
+  border: 1px solid var(--border-subtle);
+}
+
+.time-chip-gz {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.time-chip-ts {
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.time-chip-ts.luck-ji {
+  background: var(--color-yi-bg);
+  color: var(--color-yi);
+}
+
+.time-chip-ts.luck-xiong {
+  background: var(--color-ji-bg);
+  color: var(--color-ji);
+}
+
+.time-chip-range {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+/* ==========================================================================
+   当日本地备忘与记事列表
+   ========================================================================== */
+.notes-section {
+  margin-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
+.notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.notes-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.notes-add-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.input-note {
+  flex: 1;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input-note:focus {
+  border-color: var(--accent-primary);
+}
+
+.btn-add-note {
+  background: var(--accent-primary);
+  color: #fff;
+  border: none;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.note-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card-subtle);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.note-text-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.note-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.note-text.completed {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.btn-delete-note {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.notes-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* ==========================================================================
+   模态弹窗与底部抽屉系统 (iOS 原生 Action Sheet，120 FPS 满帧 GPU 硬件驱动)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.modal-overlay.active {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-card-solid);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 12px 18px max(var(--safe-bottom), 24px) 18px;
+  max-height: 85vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translate3d(0, 105%, 0);
+  -webkit-transform: translate3d(0, 105%, 0);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+  touch-action: pan-y;
+}
+
+.modal-overlay.active .modal-sheet {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+.modal-handle {
+  width: 40px;
+  height: 5px;
+  background: var(--text-tertiary);
+  border-radius: var(--radius-full);
+  margin: 4px auto 14px auto;
+  opacity: 0.38;
+  cursor: grab;
+  user-select: none;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+.modal-handle:hover {
+  opacity: 0.7;
+  width: 46px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.btn-close-modal {
+  background: var(--bg-pill);
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 年月快速选择器网格 */
+.picker-grid-years {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 145px;
+  overflow-y: auto;
+  padding-right: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  -webkit-overflow-scrolling: touch;
+}
+
+.picker-grid-years::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0;
+  height: 0;
+}
+
+.picker-grid-months {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.picker-item {
+  padding: 10px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--bg-card-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  transition: all 0.15s ease;
+}
+
+.picker-item:active {
+  transform: scale(0.95);
+}
+
+.picker-item.active {
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+}
+
+/* 吉日速查与二十四节气列表样式 */
+.auspicious-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tag-filter {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--bg-pill);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-filter.active {
+  background: var(--accent-primary);
+  color: #fff;
+}
+
+.auspicious-results-list,
+.solar-terms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.result-card-item {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.result-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.result-solar-date {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.result-lunar-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.result-yi-summary {
+  font-size: 11px;
+  color: var(--color-yi);
+  font-weight: 600;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 二十四节气四季雅致卡片排版 */
+.jieqi-seasons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jieqi-season-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jieqi-season-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding-left: 2px;
+}
+
+.jieqi-season-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.jieqi-term-card {
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.jieqi-term-card:active {
+  transform: scale(0.97);
+  background: var(--bg-pill);
+}
+
+.jieqi-term-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.jieqi-term-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.jieqi-term-order {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.jieqi-term-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.jieqi-term-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.jieqi-term-time {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.jieqi-poem-footer {
+  text-align: center;
+  padding: 16px 8px 6px 8px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-tertiary);
+  border-top: 1px dashed var(--border-subtle);
+  margin-top: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   macOS 原生桌面窗口拖拽与交互指针优化
+   ========================================================================== */
+.header-bar {
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+button, input, select, textarea, a,
+.day-cell, .tab-btn, .header-title-group, .header-actions,
+.result-card-item, .term-card-item, .picker-item, .tag-filter,
+.btn-icon, .btn-today, .note-checkbox, .btn-delete-note, .time-chip {
+  -webkit-app-region: no-drag !important;
+  cursor: pointer;
+  pointer-events: auto !important;
+}
+
+/* ==========================================================================
+   交互按钮悬浮微浮起动画 (MacBook 原生动效设计)
+   ========================================================================== */
+/* 仅在支持鼠标悬停的桌面设备上启用 Hover 动效，移动端彻底禁用以杜绝触摸跳动与掉帧 */
+@media (hover: hover) and (pointer: fine) {
+  .btn-icon,
+  .btn-today,
+  .btn-add-note,
+  .tab-btn,
+  .tag-filter,
+  .result-card-item,
+  .term-card-item,
+  .picker-item,
+  .time-chip,
+  .header-title-group {
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.15s ease;
+  }
+
+  .btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-today:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(229, 57, 53, 0.35);
+  }
+
+  .header-title-group:hover {
+    background: var(--bg-pill);
+  }
+
+  .tab-btn:hover:not(.active) {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .day-cell:hover {
+    background: var(--bg-card-subtle);
+  }
+
+  .tag-filter:hover {
+    transform: translateY(-1.5px);
+  }
+
+  .result-card-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-border);
+  }
+
+  .term-card-item:hover {
+    transform: translateY(-2px);
+  }
+
+  .picker-item:hover {
+    border-color: var(--accent-border);
+  }
+
+  .time-chip:hover {
+    border-color: var(--accent-border);
+  }
+
+  .btn-add-note:hover {
+    filter: brightness(1.05);
+  }
+}
+
+/* 按下 (Active) 触感反馈 */
+.btn-icon:active,
+.btn-today:active,
+.btn-add-note:active,
+.tab-btn:active,
+.tag-filter:active,
+.result-card-item:active,
+.term-card-item:active,
+.picker-item:active,
+.day-cell:active,
+.time-chip:active {
+  transform: translateY(0px) scale(0.95) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* ==========================================================================
+   📱 iOS 手机端专属黄金比例排版优化 (iPhone 灵动岛/刘海屏大屏全适配，支持 ProMotion 120Hz)
+   ========================================================================== */
+@media screen and (max-width: 600px) {
+  .app-container {
+    padding-top: max(calc(var(--safe-top) + 28px), 52px);
+    padding-bottom: max(calc(var(--safe-bottom) + 20px), 32px);
+    padding-left: 16px;
+    padding-right: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .header-bar {
+    padding: 6px 2px 14px 2px;
+    margin-bottom: 2px;
+  }
+
+  .header-year {
+    font-size: 16px;
+  }
+
+  .header-month {
+    font-size: 30px;
+  }
+
+  .quick-tools-bar {
+    padding: 4px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-lg);
+  }
+
+  .tab-btn {
+    padding: 10px 0;
+    font-size: 14px;
+  }
+
+  #calendarViewArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .calendar-card {
+    padding: 16px 14px 14px 14px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 0;
+    transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.25s ease;
+  }
+
+  .week-header {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .month-grid {
+    row-gap: 6px;
+    column-gap: 4px;
+  }
+
+  .day-cell {
+    height: 54px;
+    border-radius: var(--radius-md);
+  }
+
+  .solar-num {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .lunar-text {
+    font-size: 10.5px;
+    margin-top: 1px;
+  }
+
+  .detail-card {
+    padding: 16px 16px 14px 16px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 0;
+  }
+
+  .detail-header-row {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .detail-lunar-main {
+    font-size: 23px;
+  }
+
+  .detail-solar-week {
+    font-size: 13.5px;
+  }
+
+  .detail-lunar-ganzhi {
+    font-size: 12.5px;
+  }
+
+  .btn-toggle-huangli {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: var(--radius-lg);
+    margin-top: 4px;
+  }
+}
+
+

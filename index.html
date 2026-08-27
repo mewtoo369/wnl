@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>万年历 - 极简纯粹·无广告</title>
+  
+  <!-- iOS 独立全屏 App 体验配置 (PWA 彻底隐藏地址栏与底栏) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-touch-fullscreen" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="万年历">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  
+  <!-- 图标与 Manifest -->
+  <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- 关键首屏即时渲染样式 (解决 PWA 冷启动白屏与主题闪烁) -->
+  <style>
+    :root {
+      --bg-base: #f5f6f8;
+      --text-main: #1c1c1e;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-base: #000000;
+        --text-main: #ffffff;
+      }
+    }
+    [data-theme="dark"] {
+      --bg-base: #000000 !important;
+      --text-main: #ffffff !important;
+    }
+    [data-theme="light"] {
+      --bg-base: #f5f6f8 !important;
+      --text-main: #1c1c1e !important;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-base);
+      background: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+
+  <!-- 样式表与动态主题即时防闪烁初始化脚本 -->
+  <link rel="stylesheet" href="./css/style.css?v=77">
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('wnl_user_settings');
+        var theme = 'auto';
+        if (raw) { theme = JSON.parse(raw).theme || 'auto'; }
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- 顶部导航栏 -->
+    <header class="header-bar">
+      <div class="header-title-group" id="btnYearMonthPicker" title="点击快速选择年月">
+        <div class="header-date-stack">
+          <div class="header-date-row-top">
+            <span class="header-year" id="headerYearText">2026年</span>
+            <span class="header-lunar-year" id="headerLunarYearText">丙午年</span>
+          </div>
+          <div class="header-date-row-bottom">
+            <div class="header-month-wrap">
+              <span class="header-month" id="headerMonthText">8月</span>
+              <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <span class="header-lunar-zodiac" id="headerLunarZodiacText">【马年】</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-icon" id="btnPrevMonth" title="上个月" aria-label="上个月">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="btn-icon" id="btnNextMonth" title="下个月" aria-label="下个月">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+        <button class="btn-icon" id="btnSettings" title="设置" aria-label="设置">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 快捷视图切换药丸栏 (带平滑滑动背景指示器) -->
+    <nav class="quick-tools-bar" id="quickToolsBar">
+      <div class="tab-slider-pill" id="tabSliderPill"></div>
+      <button class="tab-btn active" id="tabCalendar" data-tab="calendar">📅 日历</button>
+      <button class="tab-btn" id="tabJieqi" data-tab="jieqi">🌿 节气表</button>
+      <button class="tab-btn" id="tabAuspicious" data-tab="auspicious">✨ 吉日速查</button>
+    </nav>
+
+    <!-- 3 大主功能视图 120Hz 左右平滑轮播滑轨容器 -->
+    <div class="views-swipe-carousel" id="viewsSwipeCarousel">
+      <!-- 视图 1：日历与黄历详情 -->
+      <div class="view-slide-panel" id="panelViewCalendar">
+        <!-- 月历卡片 -->
+        <section class="glass-panel calendar-card">
+          <!-- 120Hz 系统级 C++ 原生硬件多月长卷滚动容器 (0 行 JS 阻塞，ProMotion 满帧，支持无限连滑) -->
+          <div class="calendar-scroll-container" id="calendarScrollContainer"></div>
+        </section>
+
+        <!-- 选中日期黄历详情卡片 -->
+        <section class="glass-panel detail-card" id="detailCard">
+          <!-- 头部日期概要 -->
+          <div class="detail-header-row">
+            <div class="detail-header-left">
+              <div class="detail-lunar-row">
+                <span class="detail-lunar-main" id="detailLunarMain">农历 七月十四</span>
+                <span class="detail-jieqi-tag" id="detailJieqiTag">节气 · 处暑</span>
+              </div>
+              <div class="detail-solar-week" id="detailSolarWeek">2026年8月26日 · 星期三</div>
+              <div class="detail-lunar-ganzhi" id="detailLunarGanzhi">丙午年 丙申月 壬申日</div>
+            </div>
+          </div>
+
+          <!-- 双胶囊操作底栏 (左侧展开黄历抽屉，右侧回到今天) -->
+          <div class="detail-actions-row">
+            <button class="btn-toggle-huangli" id="btnToggleHuangli" title="查看黄历宜忌与时辰" aria-label="查看黄历宜忌与时辰">
+              <span id="toggleHuangliText">展开宜忌与时辰</span>
+              <svg class="toggle-icon" id="toggleHuangliIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+            <button class="btn-today-card" id="btnToday" title="回到今天" aria-label="回到今天">
+              <span>今天</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- 视图 2：二十四节气表 -->
+      <div class="view-slide-panel" id="panelViewJieqi">
+        <div class="glass-panel" style="padding: 16px;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="jieqiYearTitle">2026年 二十四节气谱</span>
+            <span style="font-size: 12px; color: var(--text-tertiary);">点击直接查阅日期</span>
+          </div>
+          <div class="jieqi-seasons-container" id="solarTermsList">
+            <!-- 动态填充四季二十四节气卡片 -->
+          </div>
+          <div class="jieqi-poem-footer">
+            <div>春雨惊春清谷天，夏满芒夏暑相连。</div>
+            <div>秋处露秋寒霜降，冬雪雪冬小大寒。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 3：黄道吉日速查 -->
+      <div class="view-slide-panel" id="panelViewAuspicious">
+        <div class="glass-panel" style="padding: 16px;">
+          <div style="font-size: 16px; font-weight: 700; margin-bottom: 10px;">择吉选日</div>
+          <div class="auspicious-tags-row" id="auspiciousTagsRow">
+            <button class="tag-filter active" data-tag="嫁娶">👰 嫁娶结婚</button>
+            <button class="tag-filter" data-tag="开市">🏢 开业开市</button>
+            <button class="tag-filter" data-tag="入宅">🏡 乔迁入宅</button>
+            <button class="tag-filter" data-tag="出行">✈️ 出行远行</button>
+            <button class="tag-filter" data-tag="祈福">🙏 祈福祭祀</button>
+            <button class="tag-filter" data-tag="动土">🔨 动土修造</button>
+            <button class="tag-filter" data-tag="安床">🛏️ 安床置产</button>
+          </div>
+          <div class="auspicious-results-list" id="auspiciousResultsList">
+            <!-- 动态填充吉日列表 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 模态弹窗系统 (iOS 底部抽屉) -->
+  <div class="modal-overlay" id="modalOverlay">
+    
+    <!-- 黄历宜忌与时辰详情抽屉 (100% GPU 满帧滑入滑出，支持向下滑动手势秒速收起) -->
+    <div class="modal-sheet" id="huangliModal" style="display: none;">
+      <div class="modal-handle" id="huangliModalHandle"></div>
+      <div class="modal-header" style="margin-bottom: 14px;">
+        <div style="flex: 1;">
+          <div class="modal-title" id="sheetLunarMainTitle">农历 七月十四</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;" id="sheetSolarWeekGanzhi">2026年8月26日 · 丙午年 丙申月 壬申日</div>
+        </div>
+      </div>
+
+      <!-- 宜忌 -->
+      <div class="yiji-section">
+        <div class="yiji-box yi">
+          <div class="yiji-label-row">
+            <span class="yiji-badge">宜</span>
+            <span class="yiji-title">宜于事项</span>
+          </div>
+          <div class="yiji-content-tags" id="yiTagsContainer"></div>
+        </div>
+
+        <div class="yiji-box ji">
+          <div class="yiji-label-row">
+            <span class="yiji-badge">忌</span>
+            <span class="yiji-title">忌讳事项</span>
+          </div>
+          <div class="yiji-content-tags" id="jiTagsContainer"></div>
+        </div>
+      </div>
+
+      <!-- 黄历神煞与方位 -->
+      <div class="huangli-meta-grid">
+        <div class="meta-item">
+          <span class="meta-key">冲煞:</span>
+          <span class="meta-val" id="valChongSha">冲兔 · 煞东</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-key">胎神:</span>
+          <span class="meta-val" id="valTaiShen">碓磨厕房内北</span>
+        </div>
+        <div class="meta-item" style="grid-column: span 2;">
+          <span class="meta-key">吉神方位:</span>
+          <span class="meta-val" id="valShenWei">喜神: 西南 / 福神: 正东 / 财神: 正东</span>
+        </div>
+        <div class="meta-item" style="grid-column: span 2;">
+          <span class="meta-key">彭祖百忌:</span>
+          <span class="meta-val" id="valPengZu">辛不合酱 酉不会客</span>
+        </div>
+      </div>
+
+      <!-- 十二时辰吉凶横向滚动 -->
+      <div style="margin-top: 14px;">
+        <div class="times-section-title">
+          <span>十二时辰吉凶</span>
+          <span style="font-size: 11px; font-weight: 500; color: var(--text-tertiary);">左右滑动</span>
+        </div>
+        <div class="times-scroll-box" id="timesScrollBox"></div>
+      </div>
+    </div>
+
+    <!-- 年月快速选择抽屉 -->
+    <div class="modal-sheet" id="pickerModal" style="display: none;">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">快速跳转年月</div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div style="font-size: 12px; color: var(--text-tertiary); font-weight: 600; margin-bottom: 8px;">年份</div>
+      <div class="picker-grid-years" id="pickerYearsGrid"></div>
+
+      <div style="font-size: 12px; color: var(--text-tertiary); font-weight: 600; margin-top: 12px; margin-bottom: 8px;">月份</div>
+      <div class="picker-grid-months" id="pickerMonthsGrid"></div>
+    </div>
+
+    <!-- 设置抽屉 -->
+    <div class="modal-sheet" id="settingsModal" style="display: none;">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">设置与偏好</div>
+        <button class="btn-close-modal">✕</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; font-size: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0;">
+          <span style="font-weight: 600;">深色模式</span>
+          <select id="themeSelect" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-card-subtle); color: var(--text-main); font-size: 13px;">
+            <option value="auto">跟随系统</option>
+            <option value="light">浅色模式</option>
+            <option value="dark">深色模式</option>
+          </select>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px;">
+          <div style="font-weight: 600; margin-bottom: 8px;">数据备份与迁移 (纯本地安全)</div>
+          <div style="display: flex; gap: 10px;">
+            <button id="btnExportData" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-card-subtle); color: var(--text-main); font-weight: 600; cursor: pointer;">导出本地备份</button>
+            <button id="btnImportData" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-card-subtle); color: var(--text-main); font-weight: 600; cursor: pointer;">恢复数据</button>
+            <input type="file" id="fileImport" accept=".json" style="display: none;">
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; color: var(--text-secondary); font-size: 12px; line-height: 1.6;">
+          <div style="font-weight: 700; color: var(--text-main); margin-bottom: 4px;">关于本软件</div>
+          <p>• 100% 零广告、零追踪、零后台数据上传。</p>
+          <p>• 农历算法基于 6tail/lunar-javascript（紫金山天文台历法标准）。</p>
+          <p>• 支持离线运行，在 iPhone Safari 中点击「分享」-「添加到主屏幕」即可全屏使用。</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 引入脚本依赖（顺序：算法库 -> 节假日 -> 本地存储 -> 核心计算 -> 应用交互） -->
+  <script src="./js/lib/lunar.min.js?v=77"></script>
+  <script src="./js/holidays.js?v=77"></script>
+  <script src="./js/storage.js?v=77"></script>
+  <script src="./js/calendar.js?v=77"></script>
+  <script src="./js/app.js?v=77"></script>
+</body>
+</html>
