@@ -752,12 +752,17 @@ document.addEventListener('DOMContentLoaded', () => {
           } else {
             state.selectedYear = currentYear;
             state.selectedMonth = currentMonth;
-            state.selectedDay = null;
+            state.selectedDay = getSelectedDayForMonth(currentYear, currentMonth);
           }
 
           renderHeader();
-          if (state.selectedDay) {
-            renderDayDetail(state.selectedYear, state.selectedMonth, state.selectedDay);
+          renderDayDetail(state.selectedYear, state.selectedMonth, state.selectedDay);
+
+          // 联动高亮当前月份面板中的选中日期
+          const currentPanel = container.children[currentIdx];
+          if (currentPanel) {
+            const grid = currentPanel.querySelector('.month-grid');
+            if (grid) renderMonthIntoPanel(grid, currentYear, currentMonth);
           }
         }
       }
@@ -874,15 +879,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           state.selectedYear = state.viewYear;
           state.selectedMonth = state.viewMonth;
-          state.selectedDay = null;
+          state.selectedDay = getSelectedDayForMonth(state.viewYear, state.viewMonth);
         }
 
         closeModals();
         renderHeader();
         renderCalendarGrid();
-        if (state.selectedDay) {
-          renderDayDetail(state.viewYear, state.viewMonth, state.selectedDay);
-        }
+        renderDayDetail(state.selectedYear, state.selectedMonth, state.selectedDay);
       });
       dom.pickerMonthsGrid.appendChild(btn);
     }
