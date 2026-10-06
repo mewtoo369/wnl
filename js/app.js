@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   let baseYear = state.viewYear;
+  const HALF_SPAN = 7; // 前后各 7 年，共 15 年连续全长卷 (180 个自然月)，覆盖跨年无缝畅滑
+  let isScrollProgrammatic = false;
 
   // DOM 元素引用
   const dom = {
@@ -275,24 +277,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * 渲染系统级 60 面板连续五年全长卷 (涵盖 baseYear-2 到 baseYear+2 共 60 个自然月份)
-   * 彻底实现：多跨年无缝漫游、0 累加 Bug、120 FPS ProMotion 满帧、无限连续极速滑动！
+   * 渲染系统级 180 面板连续 15 年全长卷 (涵盖 baseYear-7 到 baseYear+7 共 180 个自然月份)
+   * 彻底根治跨年跳变 Bug：彻底移除销毁式重建与静默重置跑道定时器，多跨年无缝漫游、0 累加 Bug、120 FPS ProMotion 满帧！
    */
   function renderCalendarGrid(forceRebuild = false) {
     const container = dom.calendarScrollContainer;
     if (!container) return;
 
     const y = state.viewYear;
-    const startYear = baseYear - 2; // e.g. 2024 (涵盖 2024, 2025, 2026, 2027, 2028)
+    const startYear = baseYear - HALF_SPAN;
+    const endYear = baseYear + HALF_SPAN;
 
-    // 若当前年份已超出 5 年视口范围，则重新居中 baseYear
-    if (forceRebuild || y < startYear || y > baseYear + 2 || container.children.length === 0) {
+    // 若当前年份已超出 15 年视口范围，或者容器为空，或者显式指定重建，才重新居中 baseYear
+    if (forceRebuild || y < startYear || y > endYear || container.children.length === 0) {
+      isScrollProgrammatic = true;
       baseYear = y;
-      const newStartYear = baseYear - 2;
+      const newStartYear = baseYear - HALF_SPAN;
+      const totalPanels = (HALF_SPAN * 2 + 1) * 12; // 15 * 12 = 180
       container.innerHTML = '';
 
-      // 生成 60 个连续自然月份物理面板 (5 年 × 12 个月)
-      for (let i = 0; i < 60; i++) {
+      // 生成 180 个连续自然月份物理面板 (15 年 × 12 个月)
+      for (let i = 0; i < totalPanels; i++) {
         const panelYear = newStartYear + Math.floor(i / 12);
         const panelMonth = (i % 12) + 1;
 
@@ -314,8 +319,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         container.appendChild(panel);
       }
+
+      scrollToYearMonth(state.viewYear, state.viewMonth, false);
+
+      // 双重 rAF 确保浏览器完成排版渲染且 scrollLeft 稳定后再解锁
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          isScrollProgrammatic = false;
+        });
+      });
     } else {
-      // 仅更新高亮选中的日期
+      // 仅更新高亮选中的日期，绝不触碰 DOM 骨架，零跳帧、零位移
       container.querySelectorAll('.month-grid-panel').forEach(panel => {
         const py = parseInt(panel.getAttribute('data-year') || '0', 10);
         const pm = parseInt(panel.getAttribute('data-month') || '0', 10);
@@ -324,9 +338,8 @@ document.addEventListener('DOMContentLoaded', () => {
           renderMonthIntoPanel(grid, py, pm);
         }
       });
+      scrollToYearMonth(state.viewYear, state.viewMonth, false);
     }
-
-    scrollToYearMonth(state.viewYear, state.viewMonth, false);
   }
 
   /**
@@ -645,20 +658,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-  /**
-   * 120Hz 系统级 60 面板连续五年长卷导航引擎 (ProMotion 满帧，涵盖 Y-2 到 Y+2，支持无限静默漫游)
+   * 120Hz 系统级 180 面板连续 15 年长卷导航引擎 (ProMotion 满帧，涵盖 Y-7 到 Y+7)
    */
   function getPanelIndexFor(y, m) {
-    const startYear = baseYear - 2;
+    const startYear = baseYear - HALF_SPAN;
     return (y - startYear) * 12 + (m - 1);
   }
 
   function scrollToYearMonth(y, m, smooth = false) {
     const container = dom.calendarScrollContainer;
     if (!container) return;
-    const w = container.offsetWidth || 360;
+    const w = container.clientWidth || container.offsetWidth || 360;
     const idx = getPanelIndexFor(y, m);
-    const targetLeft = idx * w;
+    const maxIdx = (HALF_SPAN * 2 + 1) * 12 - 1;
+    const targetIdx = Math.max(0, Math.min(maxIdx, idx));
+    const targetLeft = targetIdx * w;
 
     if (smooth) {
       container.scrollTo({ left: targetLeft, behavior: 'smooth' });
@@ -671,33 +685,55 @@ document.addEventListener('DOMContentLoaded', () => {
     let prevY = state.viewYear;
     let prevM = state.viewMonth - 1;
     if (prevM < 1) { prevM = 12; prevY--; }
-    scrollToYearMonth(prevY, prevM, true);
+
+    const startYear = baseYear - HALF_SPAN;
+    state.viewYear = prevY;
+    state.viewMonth = prevM;
+    renderHeader();
+
+    if (prevY < startYear) {
+      renderCalendarGrid(true);
+    } else {
+      scrollToYearMonth(prevY, prevM, true);
+    }
   }
 
   function goToNextMonth() {
     let nextY = state.viewYear;
     let nextM = state.viewMonth + 1;
     if (nextM > 12) { nextM = 1; nextY++; }
-    scrollToYearMonth(nextY, nextM, true);
+
+    const endYear = baseYear + HALF_SPAN;
+    state.viewYear = nextY;
+    state.viewMonth = nextM;
+    renderHeader();
+
+    if (nextY > endYear) {
+      renderCalendarGrid(true);
+    } else {
+      scrollToYearMonth(nextY, nextM, true);
+    }
   }
 
   function bindSwipeGestures() {
-    // 1. 系统级 60 面板长卷硬件滚动监听 (120Hz ProMotion 0 毫秒 JS 阻塞)
+    // 1. 系统级长卷硬件滚动监听 (120Hz ProMotion 0 毫秒 JS 阻塞)
     const container = dom.calendarScrollContainer;
     if (container) {
       let scrollTimer = null;
-      let idleRecenterTimer = null;
 
       window.addEventListener('resize', () => {
         scrollToYearMonth(state.viewYear, state.viewMonth, false);
       }, { passive: true });
 
       function onScrollSettled() {
-        const w = container.offsetWidth || 360;
+        if (isScrollProgrammatic) return;
+
+        const w = container.clientWidth || container.offsetWidth || 360;
         if (w <= 0) return;
         const sl = container.scrollLeft;
-        const currentIdx = Math.max(0, Math.min(59, Math.round(sl / w)));
-        const startYear = baseYear - 2;
+        const maxIdx = (HALF_SPAN * 2 + 1) * 12 - 1;
+        const currentIdx = Math.max(0, Math.min(maxIdx, Math.round(sl / w)));
+        const startYear = baseYear - HALF_SPAN;
         const currentYear = startYear + Math.floor(currentIdx / 12);
         const currentMonth = (currentIdx % 12) + 1;
 
@@ -724,23 +760,18 @@ document.addEventListener('DOMContentLoaded', () => {
             renderDayDetail(state.selectedYear, state.selectedMonth, state.selectedDay);
           }
         }
-
-        // 静默重置跑道机制：当用户停留在某个年份超过 800ms，静默以该年为基准平移 5 年长卷，永远保持无限前后各 2 年畅滑！
-        if (idleRecenterTimer) clearTimeout(idleRecenterTimer);
-        idleRecenterTimer = setTimeout(() => {
-          if (state.viewYear !== baseYear) {
-            renderCalendarGrid(true);
-          }
-        }, 800);
       }
 
       container.addEventListener('scroll', () => {
+        if (isScrollProgrammatic) return;
+
         // 关键：0ms 实时精准计算左上角年月标题，手指拖拽时毫秒级绝对精准响应
-        const w = container.offsetWidth || 360;
+        const w = container.clientWidth || container.offsetWidth || 360;
         if (w > 0) {
           const sl = container.scrollLeft;
-          const currentIdx = Math.max(0, Math.min(59, Math.round(sl / w)));
-          const startYear = baseYear - 2;
+          const maxIdx = (HALF_SPAN * 2 + 1) * 12 - 1;
+          const currentIdx = Math.max(0, Math.min(maxIdx, Math.round(sl / w)));
+          const startYear = baseYear - HALF_SPAN;
           const currentYear = startYear + Math.floor(currentIdx / 12);
           const currentMonth = (currentIdx % 12) + 1;
 
